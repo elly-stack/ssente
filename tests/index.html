@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ssente tests</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;margin:16px}.ok{color:#0a7a2f}.fail{color:#b3261e}</style></head>
+<body><h1>Money maths tests</h1><ul id="out"></ul><p id="sum"></p>
+<script src="../js/money.js"></script>
+<script src="money.test.js"></script>
+<script>
+  const r = window.__testResults, out = document.getElementById('out');
+  r.forEach((t) => { const li = document.createElement('li'); li.className = t.ok ? 'ok' : 'fail';
+    li.textContent = (t.ok ? '✓ ' : '✗ ') + t.name + (t.err ? ' — ' + t.err : ''); out.appendChild(li); });
+  document.getElementById('sum').textContent = r.filter((t) => t.ok).length + '/' + r.length + ' passed';
+</script></body></html>
