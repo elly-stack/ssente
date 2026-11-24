@@ -74,3 +74,50 @@ table { width: 100%; border-collapse: collapse; font-size: 14px; } td, th { text
 td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 details summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; }
 [hidden] { display: none !important; }
+
+/* ---------- Sage glass theme ---------- */
+:root {
+  --bg: #c9d3cf; --card: rgba(255,255,255,.55); --ink: #10221c; --ink2: #4d5f58; --line: rgba(255,255,255,.7);
+  --brand: #17332b; --brand-ink: #ffffff; --track: rgba(23,51,43,.12); --radius: 22px;
+  --glass-blur: blur(18px) saturate(140%);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1715; --card: rgba(255,255,255,.07); --ink: #e9f1ee; --ink2: #9fb2ab; --line: rgba(255,255,255,.12);
+  --brand: #cfe5dc; --brand-ink: #10221c; --track: rgba(255,255,255,.1); } }
+:root[data-theme="dark"] {
+  --bg: #0e1715; --card: rgba(255,255,255,.07); --ink: #e9f1ee; --ink2: #9fb2ab; --line: rgba(255,255,255,.12);
+  --brand: #cfe5dc; --brand-ink: #10221c; --track: rgba(255,255,255,.1); }
+html, body { background: var(--bg); }
+body { background: radial-gradient(120% 60% at 0% 0%, rgba(255,255,255,.55), transparent 60%),
+  radial-gradient(90% 50% at 100% 30%, rgba(95,122,112,.35), transparent 70%), var(--bg); background-attachment: fixed; min-height: 100vh; }
+.top { background: transparent; backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); }
+.who { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 44px; height: 44px; min-height: 0; padding: 0; border-radius: 50%; overflow: hidden; border: 2px solid var(--line);
+  background: var(--brand); color: var(--brand-ink); font-weight: 700; font-size: 16px; flex: none; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar.xl { width: 84px; height: 84px; font-size: 28px; }
+.card, .stat, .tabs, dialog, .banner { backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: 0 8px 30px rgba(16,34,28,.08), inset 0 1px 0 rgba(255,255,255,.5); }
+.stat { border-radius: 20px; }
+.hello { font-size: 24px; line-height: 1.25; margin: 6px 0 2px; font-weight: 400; }
+.hello b { font-weight: 700; }
+button, .btn { border-radius: 99px; background: var(--card); border-color: var(--line); }
+.btn-primary { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+input, select { border-radius: 16px; background: rgba(255,255,255,.35); border-color: var(--line); }
+:root[data-theme="dark"] input, :root[data-theme="dark"] select { background: rgba(255,255,255,.06); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) input, :root:not([data-theme="light"]) select { background: rgba(255,255,255,.06); } }
+.chip { border-radius: 20px; } .chip.on { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.bar { height: 14px; border-radius: 99px; } .bar > i { border-radius: 99px; }
+/* floating pill nav: icons only, active tab shows its label */
+.tabs { left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); border-radius: 99px; padding: 6px; gap: 4px;
+  border: 1px solid var(--line); max-width: 520px; margin: 0 auto; }
+.tabs button { font-size: 0; min-height: 52px; border-radius: 99px; flex-direction: row; justify-content: center; gap: 6px;
+  border: 1px solid var(--line); background: rgba(255,255,255,.35); color: var(--ink); }
+.tabs button span { font-size: 20px; }
+.tabs button.on { flex: 2.2; font-size: 14px; background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+body { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+.fab { bottom: calc(84px + env(safe-area-inset-bottom)); background: var(--brand); color: var(--brand-ink); }
+dialog { border-radius: 28px 28px 0 0; background: var(--card); }
+:root:not([data-theme="dark"]) dialog { background: rgba(240,245,243,.92); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) dialog { background: rgba(20,32,29,.95); } }
+:root[data-theme="dark"] dialog { background: rgba(20,32,29,.95); }

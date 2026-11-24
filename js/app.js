@@ -164,7 +164,10 @@
     const recent = S().expenses.slice().sort((a, b) => (b.date + b.id > a.date + a.id ? 1 : -1)).slice(0, 5);
     const pct = Math.min(100, Math.round(s.pct * 100));
     const msg = { ok: 'On track', warn: 'Watch your spending', danger: 'Almost at your limit', over: 'Over budget' }[s.level];
-    return `${backupDue() ? `<div class="banner"><b>Time to back up.</b> Last backup: ${S().meta.lastBackup ? fmtDate(S().meta.lastBackup) : 'never'}.
+    const first = (S().settings.name || '').trim().split(/\s+/)[0];
+    return `<p class="hello">Welcome${first ? ', <b>' + esc(first) + '!</b>' : '!'} here's your <b>money snapshot for today</b></p>
+      <p class="muted" style="margin:0 0 6px">Today is ${fmtDate(today())}</p>
+      ${backupDue() ? `<div class="banner"><b>Time to back up.</b> Last backup: ${S().meta.lastBackup ? fmtDate(S().meta.lastBackup) : 'never'}.
         <div class="row" style="margin-top:8px"><button class="btn-primary" data-act="exportJSON">Back up now</button><button data-act="snooze">Later</button></div></div>` : ''}
       <div class="card"><div class="row"><div class="grow"><small class="muted">Left to spend in ${M.ymLabel(ym, true)}</small>
         <div class="big ${s.leftToSpend < 0 ? 't-bad' : ''}">${ugx(s.leftToSpend)}</div></div>
@@ -280,7 +283,11 @@
   function viewMore() {
     const st = S().settings, ln = S().loan, l = M.loanSummary(ln, st.income);
     const share = Math.round(l.shareOfIncome * 1000) / 10;
-    return `<h2>My numbers</h2><form class="card" id="settingsForm">
+    return `<div class="card row" style="gap:14px">${avatarHTML('xl')}<div class="grow"><b style="font-size:18px">${esc(st.name || 'Add your name')}</b>
+        <div class="row" style="margin-top:6px"><button class="link" data-act="pickPhoto">${st.photo ? 'Change photo' : 'Add photo'}</button>${st.photo ? '<button class="link btn-danger" data-act="removePhoto">Remove</button>' : ''}</div>
+        <small class="muted">Your photo stays on this phone (and in your backups).</small></div><input type="file" id="photoFile" accept="image/*" hidden></div>
+      <h2>My numbers</h2><form class="card" id="settingsForm">
+        <label>Your name</label><input name="name" value="${esc(st.name || '')}" maxlength="40" autocomplete="name">
         <label>Monthly income (net, paid at month end)</label>${moneyInput('income', st.income)}
         <label>Monthly expenses budget</label>${moneyInput('expenses', st.expenses)}
         <label>Reserve to protect</label>${moneyInput('reserve', st.reserve)}
@@ -319,11 +326,32 @@
     });
   }
 
+  /* ---------- profile photo (kept on device, shrunk to 256px) ---------- */
+  function avatarHTML(size) {
+    const st = S().settings;
+    const initials = (st.name || '').trim().split(/\s+/).map((w) => w[0] || '').join('').slice(0, 2).toUpperCase() || '🙂';
+    const inner = st.photo ? `<img src="${st.photo}" alt="">` : esc(initials);
+    return size ? `<button class="avatar ${size}" data-act="pickPhoto" aria-label="Change photo">${inner}</button>` : inner;
+  }
+  function setPhoto(file) {
+    const img = new Image();
+    img.onload = () => {
+      const n = 256, c = document.createElement('canvas'); c.width = c.height = n;
+      const s = Math.min(img.width, img.height);
+      c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, n, n);
+      S().settings.photo = c.toDataURL('image/jpeg', 0.82);
+      URL.revokeObjectURL(img.src); save();
+    };
+    img.onerror = () => alert('Could not read that image.');
+    img.src = URL.createObjectURL(file);
+  }
+
   /* ---------- render + events ---------- */
   const VIEWS = { home: [viewHome, 'Ssente'], month: [viewMonth, 'Month'], goals: [viewGoals, 'Savings goals'], school: [viewSchool, 'Semester plan'], more: [viewMore, 'More'] };
   function render() {
     const [fn, title] = VIEWS[tab];
     $('#title').textContent = title;
+    $('#avatar').innerHTML = avatarHTML();
     $('#monthSwitch').hidden = tab !== 'month';
     $('#monthLabel').textContent = M.ymLabel(viewYM, true);
     $('#fab').hidden = !(tab === 'home' || tab === 'month');
@@ -355,7 +383,7 @@
       case 'saveSettings': {
         e.preventDefault();
         const d = Object.fromEntries(new FormData($('#settingsForm')));
-        Object.assign(S().settings, { income: M.parseAmount(d.income), expenses: M.parseAmount(d.expenses), reserve: M.parseAmount(d.reserve), otherSavings: M.parseAmount(d.otherSavings), theme: d.theme });
+        Object.assign(S().settings, { name: (d.name || '').trim(), income: M.parseAmount(d.income), expenses: M.parseAmount(d.expenses), reserve: M.parseAmount(d.reserve), otherSavings: M.parseAmount(d.otherSavings), theme: d.theme });
         applyTheme(); save(); break;
       }
       case 'calcLoan': {
@@ -368,6 +396,8 @@
       case 'exportCSV': download('ssente-expenses-' + today() + '.csv', M.expensesCSV(S().expenses, S().categories), 'text/csv'); break;
       case 'importJSON': { const f = $('#importFile'); f.onchange = () => f.files[0] && importJSON(f.files[0]); f.click(); break; }
       case 'snooze': S().meta.backupSnoozeUntil = M.todayISO(new Date(Date.now() + 3 * 864e5)); save(); break;
+      case 'pickPhoto': { const f = $('#photoFile'); f.onchange = () => f.files[0] && setPhoto(f.files[0]); f.click(); break; }
+      case 'removePhoto': if (confirm('Remove your profile photo?')) { S().settings.photo = null; save(); } break;
       case 'addCat': catSheet(); break;
       case 'editCat': catSheet(S().categories.find((c) => c.id === id)); break;
     }
